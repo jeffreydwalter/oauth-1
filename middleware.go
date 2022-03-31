@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type contextKey string
@@ -65,18 +64,18 @@ func (ba *BearerAuthentication) Authorize(next http.Handler) http.Handler {
 // Check header and token.
 func (ba *BearerAuthentication) checkAuthorizationHeader(auth string) (t *Token, err error) {
 	if len(auth) < 7 {
-		return nil, errors.New("Invalid bearer authorization header")
+		return nil, errors.New("invalid bearer authorization header")
 	}
 	authType := strings.ToLower(auth[:6])
 	if authType != "bearer" {
-		return nil, errors.New("Invalid bearer authorization header")
+		return nil, errors.New("invalid bearer authorization header")
 	}
 	token, err := ba.provider.DecryptToken(auth[7:])
 	if err != nil {
-		return nil, errors.New("Invalid token")
+		return nil, errors.New("invalid token")
 	}
-	if time.Now().UTC().After(token.CreationDate.Add(token.ExpiresIn)) {
-		return nil, errors.New("Token expired")
+	if token.IsExpired() {
+		return nil, errors.New("token expired")
 	}
 	return token, nil
 }

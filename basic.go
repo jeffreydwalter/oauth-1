@@ -25,7 +25,7 @@ func GetBasicAuthentication(r *http.Request) (username, password string, err err
 	return "", "", nil
 }
 
-// Check Basic Authorization header credentials
+// CheckBasicAuthentication checks Basic Authorization header credentials
 func CheckBasicAuthentication(username, password string, r *http.Request) error {
 	u, p, err := GetBasicAuthentication(r)
 	if err != nil {
