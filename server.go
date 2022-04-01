@@ -201,7 +201,7 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 
 		token, refresh, err := bs.generateTokens(refresh.TokenType, refresh.Credential, refresh.Scope, r)
 		if err != nil {
-			return "Token generation failed", http.StatusInternalServerError
+			return "Token generation failed, " + err.Error(), http.StatusInternalServerError
 		}
 
 		err = bs.verifier.StoreTokenID(token.TokenType, refresh.Credential, token.ID, refresh.ID)
@@ -210,7 +210,7 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 		}
 
 		if resp, err = bs.cryptTokens(token, refresh, r); err != nil {
-			return "Token generation failed", http.StatusInternalServerError
+			return "Token generation failed, " + err.Error(), http.StatusInternalServerError
 		}
 	default:
 		return "Invalid grant_type", http.StatusBadRequest
