@@ -46,13 +46,14 @@ func (t *Token) IsExpired() bool {
 
 // RefreshToken structure included in the authorization server response
 type RefreshToken struct {
-	ID           string        `json:"refresh_token_id"`
-	TokenID      string        `json:"token_id"`
-	CreationDate time.Time     `json:"date"`
-	ExpiresIn    time.Duration `json:"expires_in"` // secs
-	Credential   string        `json:"credential"`
-	TokenType    TokenType     `json:"type"`
-	Scope        string        `json:"scope"`
+	ID           string            `json:"refresh_token_id"`
+	TokenID      string            `json:"token_id"`
+	CreationDate time.Time         `json:"date"`
+	ExpiresIn    time.Duration     `json:"expires_in"` // secs
+	Credential   string            `json:"credential"`
+	TokenType    TokenType         `json:"type"`
+	Scope        string            `json:"scope"`
+	Claims       map[string]string `json:"claims"`
 }
 
 // IsExpired checks the creation date to the expiry, if it's greater than 0, and returns true if the token is expired.

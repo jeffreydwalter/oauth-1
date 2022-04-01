@@ -199,7 +199,7 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 			return "Not authorized, invalid token", http.StatusUnauthorized
 		}
 
-		token, refresh, err := bs.generateTokens(refresh.TokenType, refresh.Credential, refresh.Scope, r)
+		token, refresh, err := bs.refreshTokens(refresh.TokenType, refresh.Credential, refresh.Scope, refresh.Claims)
 		if err != nil {
 			return "Token generation failed, " + err.Error(), http.StatusInternalServerError
 		}
@@ -219,18 +219,25 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 	return resp, http.StatusOK
 }
 
+func (bs *BearerServer) refreshTokens(tokenType TokenType, username, scope string, claims map[string]string) (*Token, *RefreshToken, error) {
+	token := &Token{ID: uuid.Must(uuid.NewV4()).String(), Credential: username, ExpiresIn: bs.TokenTTL, CreationDate: time.Now().UTC(), TokenType: tokenType, Scope: scope, Claims: claims}
+	refreshToken := &RefreshToken{ID: uuid.Must(uuid.NewV4()).String(), TokenID: token.ID, Credential: username, ExpiresIn: bs.RefreshTokenTTL, CreationDate: time.Now().UTC(), TokenType: tokenType, Scope: scope, Claims: claims}
+	return token, refreshToken, nil
+}
+
 func (bs *BearerServer) generateTokens(tokenType TokenType, username, scope string, r *http.Request) (*Token, *RefreshToken, error) {
 	token := &Token{ID: uuid.Must(uuid.NewV4()).String(), Credential: username, ExpiresIn: bs.TokenTTL, CreationDate: time.Now().UTC(), TokenType: tokenType, Scope: scope}
+	var claims map[string]string
+	var err error
 	if bs.verifier != nil {
-		claims, err := bs.verifier.AddClaims(token.TokenType, username, token.ID, token.Scope, r)
+		claims, err = bs.verifier.AddClaims(token.TokenType, username, token.ID, token.Scope, r)
 		if err != nil {
 			return nil, nil, err
 		}
 		token.Claims = claims
 	}
 
-	refreshToken := &RefreshToken{ID: uuid.Must(uuid.NewV4()).String(), TokenID: token.ID, Credential: username, ExpiresIn: bs.RefreshTokenTTL, CreationDate: time.Now().UTC(), TokenType: tokenType, Scope: scope}
-
+	refreshToken := &RefreshToken{ID: uuid.Must(uuid.NewV4()).String(), TokenID: token.ID, Credential: username, ExpiresIn: bs.RefreshTokenTTL, CreationDate: time.Now().UTC(), TokenType: tokenType, Scope: scope, Claims: claims}
 	return token, refreshToken, nil
 }
 
