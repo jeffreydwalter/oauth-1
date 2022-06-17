@@ -47,7 +47,7 @@ func (ba *BearerAuthentication) Authorize(next http.Handler) http.Handler {
 		auth := r.Header.Get("Authorization")
 		token, err := ba.checkAuthorizationHeader(auth)
 		if err != nil {
-			renderJSON(w, "Not authorized: "+err.Error(), http.StatusUnauthorized)
+			renderJSON(w, "Not authorized: "+err.Error(), true, http.StatusUnauthorized)
 			return
 		}
 

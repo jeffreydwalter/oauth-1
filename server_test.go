@@ -10,6 +10,7 @@ import (
 
 var _sut = NewBearerServer(
 	"mySecretKey-10101",
+	time.Second*10,
 	time.Second*60,
 	new(TestUserVerifier),
 	nil)
@@ -53,8 +54,8 @@ func (TestUserVerifier) ValidateClient(clientID, clientSecret, scope string, r *
 }
 
 // Provide additional claims to the token
-func (TestUserVerifier) AddClaims(tokenType TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
-	claims := make(map[string]string)
+func (TestUserVerifier) AddClaims(tokenType TokenType, credential, tokenID, scope string, r *http.Request) (Claims, error) {
+	claims := make(Claims)
 	claims["customer_id"] = "1001"
 	claims["customer_data"] = `{"order_date":"2016-12-14","order_id":"9999"}`
 
@@ -67,16 +68,16 @@ func (TestUserVerifier) AddClaims(tokenType TokenType, credential, tokenID, scop
 }
 
 // Provide additional information to the token response
-func (TestUserVerifier) AddProperties(tokenType TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
-	props := make(map[string]string)
-	props["customer_name"] = "Gopher"
+func (TestUserVerifier) AddProperties(tokenType TokenType, credential, tokenID, scope string, r *http.Request) (Properties, error) {
+	properties := make(Properties)
+	properties["customer_name"] = "Gopher"
 
 	// Get value from request context, and add it to our props.
 	test := r.Context().Value("oauth.props.test")
 	if test != nil {
-		props["ctx_value"] = test.(string)
+		properties["ctx_value"] = test.(string)
 	}
-	return props, nil
+	return properties, nil
 }
 
 // Validate token ID
@@ -102,7 +103,7 @@ func TestGenerateTokensByUsername(t *testing.T) {
 
 func TestCryptTokens(t *testing.T) {
 	r := new(http.Request)
-	token, refresh, err := _sut.generateTokens(UserToken, "user222","", r)
+	token, refresh, err := _sut.generateTokens(UserToken, "user222", "", r)
 	if err == nil {
 		t.Logf("Token: %v", token)
 		t.Logf("Refresh Token: %v", refresh)
@@ -120,7 +121,7 @@ func TestCryptTokens(t *testing.T) {
 
 func TestDecryptRefreshTokens(t *testing.T) {
 	r := new(http.Request)
-	token, refresh, err := _sut.generateTokens(UserToken,"user333","", r)
+	token, refresh, err := _sut.generateTokens(UserToken, "user333", "", r)
 	if err == nil {
 		t.Logf("Token: %v", token)
 		t.Logf("Refresh Token: %v", refresh)
