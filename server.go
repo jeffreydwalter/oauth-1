@@ -137,15 +137,15 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 
 		token, refresh, err := bs.generateTokens(UserToken, credential, scope, r)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if err = bs.verifier.StoreTokenID(token.TokenType, credential, token.ID, refresh.ID); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if resp, err = bs.cryptTokens(token, refresh, r); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 	case ClientCredentialsGrant:
 		if err := bs.verifier.ValidateClient(credential, secret, scope, r); err != nil {
@@ -154,15 +154,15 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 
 		token, refresh, err := bs.generateTokens(ClientToken, credential, scope, r)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if err = bs.verifier.StoreTokenID(token.TokenType, credential, token.ID, refresh.ID); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if resp, err = bs.cryptTokens(token, refresh, r); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 	case AuthCodeGrant:
 		codeVerifier, ok := bs.verifier.(AuthorizationCodeVerifier)
@@ -177,16 +177,16 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 
 		token, refresh, err := bs.generateTokens(AuthToken, user, scope, r)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check claims: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		err = bs.verifier.StoreTokenID(token.TokenType, user, token.ID, refresh.ID)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if resp, err = bs.cryptTokens(token, refresh, r); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 	case RefreshTokenGrant:
 		refresh, err := bs.provider.DecryptRefreshTokens(refreshToken)
@@ -200,16 +200,16 @@ func (bs *BearerServer) generateTokenResponse(grantType GrantType, credential st
 
 		token, refresh, err := bs.refreshTokens(refresh.TokenType, refresh.Credential, refresh.Scope, refresh.Claims)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		err = bs.verifier.StoreTokenID(token.TokenType, refresh.Credential, token.ID, refresh.ID)
 		if err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "storing Token id failed: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 
 		if resp, err = bs.cryptTokens(token, refresh, r); err != nil {
-			return ErrorResponse{Error: TokenInvalidRequest, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
+			return ErrorResponse{Error: TokenServerError, Description: "token generation failed, check security provider: " + err.Error(), URI: ""}, http.StatusInternalServerError
 		}
 	default:
 		return ErrorResponse{Error: TokenUnsupportedGrantType, Description: "grant type is unsupported", URI: ""}, http.StatusBadRequest
