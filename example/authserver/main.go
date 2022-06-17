@@ -8,7 +8,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
-	"github.com/go-chi/oauth"
+	"github.com/jeffreydwalter/oauth-1"
 )
 
 /*
@@ -63,8 +63,9 @@ func main() {
 func registerAPI(r *chi.Mux) {
 	s := oauth.NewBearerServer(
 		"mySecretKey-10101",
+		time.Second*10,
 		time.Second*120,
-		&TestUserVerifier{},
+		new(TestUserVerifier),
 		nil)
 	r.Post("/token", s.UserCredentials)
 	r.Post("/auth", s.ClientCredentials)
@@ -98,16 +99,16 @@ func (*TestUserVerifier) ValidateCode(clientID, clientSecret, code, redirectURI 
 }
 
 // AddClaims provides additional claims to the token
-func (*TestUserVerifier) AddClaims(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
-	claims := make(map[string]string)
+func (*TestUserVerifier) AddClaims(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (oauth.Claims, error) {
+	claims := make(oauth.Claims)
 	claims["customer_id"] = "1001"
 	claims["customer_data"] = `{"order_date":"2016-12-14","order_id":"9999"}`
 	return claims, nil
 }
 
 // AddProperties provides additional information to the token response
-func (*TestUserVerifier) AddProperties(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (map[string]string, error) {
-	props := make(map[string]string)
+func (*TestUserVerifier) AddProperties(tokenType oauth.TokenType, credential, tokenID, scope string, r *http.Request) (oauth.Properties, error) {
+	props := make(oauth.Properties)
 	props["customer_name"] = "Gopher"
 	return props, nil
 }
@@ -121,4 +122,3 @@ func (*TestUserVerifier) ValidateTokenID(tokenType oauth.TokenType, credential, 
 func (*TestUserVerifier) StoreTokenID(tokenType oauth.TokenType, credential, tokenID, refreshTokenID string) error {
 	return nil
 }
-
