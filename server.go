@@ -250,7 +250,7 @@ func (bs *BearerServer) cryptTokens(token *Token, refresh *RefreshToken, r *http
 		return nil, err
 	}
 
-	tokenResponse := &TokenResponse{Token: cToken, RefreshToken: cRefreshToken, TokenType: BearerToken, ExpiresIn: (int64)(bs.TokenTTL / time.Second), RefreshTokenExpiresIn: (int64)(bs.RefreshTokenTTL / time.Second)}
+	tokenResponse := &TokenResponse{Token: cToken, RefreshToken: cRefreshToken, TokenType: BearerToken, ExpiresIn: (int64)(bs.TokenTTL.Seconds()), RefreshTokenExpiresIn: (int64)(bs.RefreshTokenTTL.Seconds())}
 
 	if bs.verifier != nil {
 		props, err := bs.verifier.AddProperties(token.TokenType, token.Credential, token.ID, token.Scope, r)
